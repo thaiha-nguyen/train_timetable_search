@@ -18,7 +18,8 @@ browser.get(url)
 def train_timetable_search(send_infos: List) -> List:
     
     data = [] # data of train information, departure and arrival time
-    for i in range(len(search_hours)):
+    
+    for i in range(len(send_infos[3])): # send_infos[3] は　検索時間(search_hour)
         
         # define the keyword to search using Selenium
         elements_search_input = ["query_input", "m", "d", "hh", "mm"]
@@ -33,9 +34,9 @@ def train_timetable_search(send_infos: List) -> List:
                 
                 if element == "query_input":
                     ele = browser.find_elements("id", element)
-                    # 出発
+                    # 出発駅の情報を入力する
                     ele[0].send_keys(send_infos[0][0])
-                    #　到着
+                    # 到着の情報を入力する
                     time.sleep(1)
                     ele[1].send_keys(send_infos[0][1])
                 
@@ -51,6 +52,7 @@ def train_timetable_search(send_infos: List) -> List:
                     ele.send_keys(send_infos[n])
                     ele.click()
 
+            # 必要ない情報をチェックボークスを外す
             checked_box = True        
             if checked_box:
                 check_boxes = ["air", "exp", "hbus", "bus", "fer"]
@@ -59,11 +61,11 @@ def train_timetable_search(send_infos: List) -> List:
                     element_checkbox = browser.find_element("id",check_box)
                     element_checkbox.click()    
         
-            # click search button
+            # 検索ボタンを押す
             interact_with_browser = InteractWithBrowser(engine=browser)
             interact_with_browser.click_search_bottom()
             
-            # get current url and define new bf_soup
+            # BeautifulSoupを用い、電車の情報、時間表を取得する
             current_url = browser.current_url
             html = requests.get(current_url)
             soup = BeautifulSoup(html.content, "html.parser")   
@@ -80,7 +82,7 @@ def train_timetable_search(send_infos: List) -> List:
         # ２回目の検索から
         if i != 0:
             
-            # 検索入力
+            # 検索情報を入力する
             interact_with_browser = InteractWithBrowser(engine=browser)
             interact_with_browser.next_search(search_hour=search_hours[i], search_min=search_min)
             interact_with_browser.click_search_bottom()
@@ -124,3 +126,4 @@ if __name__ == "__main__":
     result_df.to_csv(f"2022{search_month}{search_day}_{args.start}-{args.end}.csv", index=False)
     
     # print(result_df)
+    
