@@ -3,7 +3,7 @@
 * Installation
 ```shell
 # selenium
-pip pip install selenium
+pip install selenium
 
 # beautifulsoup 
 pip install beautifulsoup4
@@ -17,4 +17,10 @@ brew install --cask chromedriver
 python main.py --start <出発駅> --end <到着駅>
 
 ```
-* Example: `python main.py --start 東京 --end 盛岡`
+* Example: 
+    ```shell
+    python main.py --departure_station 東京 --arrival_station 盛岡
+
+    # OR
+    python main.py -D 東京 -A 盛岡
+    ```

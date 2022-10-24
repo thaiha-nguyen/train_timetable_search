@@ -1,4 +1,5 @@
 import argparse
+import os
 import time
 from typing import List
 
@@ -17,65 +18,34 @@ browser.get(url)
 
 def train_timetable_search(send_infos: List) -> List:
     
-    data = [] # data of train information, departure and arrival time
-    
-    for i in range(len(send_infos[3])): # send_infos[3] は　検索時間(search_hour)
-        
-        # define the keyword to search using Selenium
-        elements_search_input = ["query_input", "m", "d", "hh", "mm"]
+    data = [] # 電車情報を保存するリスト
+    for i in range(len(send_infos[3])): # send_infos[3]は検索時間(search_hour)
         
         # i == 0: 最初の検索
         if i == 0:
             
-            # interact_with_browser = InteractWithBrowser(engine=browser)
+            interact_with_browser = InteractWithBrowser(engine=browser)
             
-            for n, element in enumerate(elements_search_input):
-                time.sleep(2)
-                
-                if element == "query_input":
-                    ele = browser.find_elements("id", element)
-                    # 出発駅の情報を入力する
-                    ele[0].send_keys(send_infos[0][0])
-                    # 到着の情報を入力する
-                    time.sleep(1)
-                    ele[1].send_keys(send_infos[0][1])
-                
-                elif element in ["m", "hh", "mm"]:
-                    ele = browser.find_element("id", element)
-                    ele.click()
-                    ele.send_keys(send_infos[n])
-                    ele.click()
-                    
-                else:
-                    ele = browser.find_elements("id","d")[0]
-                    ele.click()
-                    ele.send_keys(send_infos[n])
-                    ele.click()
+            # 検索情報をWebBrowserに送信する
+            interact_with_browser.send_infos_to_browser(send_infos=send_infos)
 
             # 必要ない情報をチェックボークスを外す
-            checked_box = True        
-            if checked_box:
-                check_boxes = ["air", "exp", "hbus", "bus", "fer"]
-                for check_box in check_boxes:
-                    time.sleep(1)
-                    element_checkbox = browser.find_element("id",check_box)
-                    element_checkbox.click()    
+            interact_with_browser.uncheck_checkbox()
         
             # 検索ボタンを押す
-            interact_with_browser = InteractWithBrowser(engine=browser)
             interact_with_browser.click_search_bottom()
             
             # BeautifulSoupを用い、電車の情報、時間表を取得する
             current_url = browser.current_url
             html = requests.get(current_url)
             soup = BeautifulSoup(html.content, "html.parser")   
-            
-            # get train information and departure-arrival time
+            # 電車の情報を取得する
             train_info = get_train_info(bf_soup=soup)
             train_depature_times, train_arrival_times = get_time_info(bf_soup=soup)
         
             data.append([train_info, train_depature_times, train_arrival_times])
-        
+
+            # 検索のページに戻す
             browser.back()
             time.sleep(1)
         
@@ -83,7 +53,6 @@ def train_timetable_search(send_infos: List) -> List:
         if i != 0:
             
             # 検索情報を入力する
-            interact_with_browser = InteractWithBrowser(engine=browser)
             interact_with_browser.next_search(search_hour=search_hours[i], search_min=search_min)
             interact_with_browser.click_search_bottom()
             
@@ -101,15 +70,15 @@ def train_timetable_search(send_infos: List) -> List:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--start", type=str, help="出発駅")
-    parser.add_argument("--end", type=str, help="到着駅")
+    parser.add_argument("-D", "--departure_station", metavar="", type=str, help="出発駅")
+    parser.add_argument("-A", "--arrival_station", metavar="", type=str, help="到着駅")
     args = parser.parse_args()
     
-    route_station = (args.start, args.end)
+    route_station = (args.departure_station, args.arrival_station) # route_station例： ("東京","盛岡")
     
     # 検索の基本情報
     search_hours_start = 6 # 初めての電車は6時にする
-    search_hours_finish = 22 # 終電の出発時間は22時にする
+    search_hours_finish = 10 # 終電の出発時間は22時にする
     search_range = 2 # 2時間ずつ検索する
     search_month, search_day = "2月", "14日" # 2022年2月14日のみ検索する
     search_hours = [f"{h}時" for h in range(search_hours_start, search_hours_finish + search_range, search_range)]
@@ -123,7 +92,10 @@ if __name__ == "__main__":
     
     # pdに変換し、csvに保存する
     result_df = convert_to_df(search_results)
-    result_df.to_csv(f"2022{search_month}{search_day}_{args.start}-{args.end}.csv", index=False)
     
-    # print(result_df)
+    output_file = "output"
+    os.makedirs(output_file, exist_ok=False)
+    result_df.to_csv(f"{output_file}/2022{search_month}{search_day}_{route_station[0]}-{route_station[1]}.csv", index=False)
+    
+    print(result_df)
     
