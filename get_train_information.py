@@ -1,12 +1,19 @@
 import re
-from typing import List, Sequence, Tuple
+from typing import Any, List, Sequence
 
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
 
-def get_train_info(bf_soup: "BeautifulSoup", find_name: str="li") -> Sequence[List[str]]:
+class SearchingOutput(List):
+    search_engine: object
+    train_info: List[str] 
+    train_depature_times: List[str] 
+    train_arrival_times: List[str]
+
+
+def get_train_info(bf_soup: object, find_name: str="li") -> Sequence[List[str]]:
     trains = bf_soup.find_all(name=find_name)
     trains_contain_texts = []
     
@@ -24,7 +31,7 @@ def get_train_info(bf_soup: "BeautifulSoup", find_name: str="li") -> Sequence[Li
     return trains_list
 
 
-def get_time_info(bf_soup: "BeautifulSoup", find_name: str="li", class_name: str="time") -> Sequence[List[str]]:
+def get_time_info(bf_soup: object, find_name: str="li", class_name: str="time") -> Sequence[List[str]]:
     times = bf_soup.find_all(name=find_name, class_=class_name)
     time_list = []
     for time in times:
@@ -46,7 +53,7 @@ def get_time_info(bf_soup: "BeautifulSoup", find_name: str="li", class_name: str
     return departure_times, arrival_times
 
 
-def get_train_timetable(search_engine: "Selenium-webdriver") -> Tuple["Selenium-webdriver", Sequence[List[str]], List[str], List[str]]:        
+def get_train_timetable(search_engine: Any) -> SearchingOutput:        
     current_url = search_engine.current_url
     html = requests.get(current_url)
     soup = BeautifulSoup(html.content, "html.parser")   
