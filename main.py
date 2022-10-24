@@ -109,7 +109,7 @@ if __name__ == "__main__":
     
     # 検索の基本情報
     search_hours_start = 6 # 初めての電車は6時にする
-    search_hours_finish = 22 # 終電は6時にする
+    search_hours_finish = 22 # 終電の出発時間は22時にする
     search_range = 2 # 2時間ずつ検索する
     search_month, search_day = "2月", "14日" # 2022年2月14日のみ検索する
     search_hours = [f"{h}時" for h in range(search_hours_start, search_hours_finish + search_range, search_range)]
