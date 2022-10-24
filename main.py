@@ -124,6 +124,3 @@ if __name__ == "__main__":
     result_df.to_csv(f"2022{search_month}{search_day}_{args.start}-{args.end}.csv", index=False)
     
     # print(result_df)
-    
-    
-    
