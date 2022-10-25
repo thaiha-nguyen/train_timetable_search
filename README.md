@@ -14,7 +14,7 @@ brew install --cask chromedriver
 
 ### Run code
 ```shell
-python main.py --start <出発駅> --end <到着駅>
+python main.py --departure_station <出発駅> --arrival_station <到着駅>
 
 ```
 * Example: 
